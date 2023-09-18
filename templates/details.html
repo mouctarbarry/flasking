@@ -1,0 +1,14 @@
+{% extends "base.html" %}
+
+{% block title %}Pet Info{% endblock %}
+
+{% block content %}
+    <img src= "{{url_for('static', filename = pet["id"]|string+".jpg")}}" height="200" alt="pet_img">
+    <h1><strong>{{ pet["name"] }} </strong></h1>
+    <p><strong>Age:</strong> {{ pet["age"] }} </p>
+    <p><strong>Bio:</strong>{{ pet["bio"] }} </p>
+
+    <p>Click <a href="{{url_for('homepage')}}">here</a> to go back to the home page.</p>
+
+{% endblock %}
+

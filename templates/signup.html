@@ -1,0 +1,48 @@
+{% extends 'base.html' %}
+
+{% block title %} Sign Up {% endblock %}
+
+{% block heading %} Sign Up {% endblock %}
+
+{% block content %}
+
+    {% if message %} {{ message }} {% endif %}
+
+
+    {% if form %}
+    <form action="{{ url_for ('sign_up') }}" method="post" style="padding: 5px">
+        {{ form.csrf_token }}
+
+        {{ form.full_name.label }} <br> {{ form.full_name }}
+        <br>
+        {% if form.full_name.errors %}
+            {% for error in form.full_name.errors %}
+                <b style="color:tomato;"> {{ error }} </b>
+                <br>
+            {% endfor %}
+        {% endif %}
+
+        {{ form.email.label }} <br> {{ form.email }} <br>
+        {% if form.email.errors %}
+            <b style="color:tomato;"> Invalid email </b>
+            <br>
+        {% endif %}
+
+        {{ form.password.label }} <br> {{ form.password }} <br>
+        {% if form.password.errors %}
+            {% for error in form.password.errors %}
+                <b style="color:tomato;"> {{ error }} </b>
+                <br>
+            {% endfor %}
+        {% endif %}
+        {{ form.confirm_password.label }} <br> {{ form.confirm_password }} <br>
+        {% if form.confirm_password.errors %}
+            {% for error in form.confirm_password.errors %}
+                <b style="color:tomato;"> {{ error }} </b>
+                <br>
+            {% endfor %}
+        {% endif %}
+        {{ form.submit }}
+    </form>
+{% endif %}
+{% endblock %}
