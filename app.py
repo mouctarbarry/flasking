@@ -13,21 +13,12 @@ db = SQLAlchemy(app)
 
 
 class Pet(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
+    id = db.Column(db.Integer, primary_key=True, autoincrement=True)
     name = db.Column(db.String, unique=True)
     age = db.Column(db.String)
     bio = db.Column(db.String)
     posted_by = db.Column(db.String, db.ForeignKey('user.id'))
 
-
-"""Information regarding the Pets in the System."""
-pets = [
-    {"id": 1, "name": "Nelly", "age": "5 weeks",
-     "bio": "I am a tiny kitten rescued by the good people at Paws Rescue Center. I love squeaky toys and cuddles."},
-    {"id": 2, "name": "Yuki", "age": "8 months", "bio": "I am a handsome gentle-cat. I like to dress up in bow ties."},
-    {"id": 3, "name": "Basker", "age": "1 year", "bio": "I love barking. But, I love my friends more."},
-    {"id": 4, "name": "Mr. Furrkins", "age": "5 years", "bio": "Probably napping."},
-]
 
 """Model for Users."""
 
@@ -47,11 +38,25 @@ with app.app_context():
     team = User(full_name="Pet Rescue Team", email="team@petrescue.co", password="adminPass")
     db.session.add(team)
 
+    # Create all pets
+    nelly = Pet(name="Nelly", age="5 weeks",
+                bio="I am a tiny kitten rescued by the good people at Paws Rescue Center. I love squeaky toys and "
+                    "cuddles.")
+    yuki = Pet(name="Yuki", age="8 months", bio="I am a handsome gentle-cat. I like to dress up in bow ties.")
+    basker = Pet(name="Basker", age="1 year", bio="I love barking. But, I love my friends more.")
+    mrfurrkins = Pet(name="Mr. Furrkins", age="5 years", bio="Probably napping.")
+
+    # Add all pets to the session
+    db.session.add(nelly)
+    db.session.add(yuki)
+    db.session.add(basker)
+    db.session.add(mrfurrkins)
+
     # Commit changes in the session
     try:
         db.session.commit()
-    except Exception as x:
-        print(x)
+    except Exception as e:
+        print(e)
         db.session.rollback()
     finally:
         db.session.close()
@@ -60,6 +65,7 @@ with app.app_context():
 @app.route("/")
 def homepage():
     """View function for Home Page."""
+    pets = Pet.query.all()
     return render_template("home.html", pets=pets)
 
 
@@ -69,10 +75,9 @@ def about():
     return render_template("about.html")
 
 
-@app.route("/details/<int:pet_id>")
+@app.route("/details/<int:pet_id>", methods=["POST", "GET"])
 def pet_details(pet_id):
     """View function for Showing Details of Each Pet."""
-    # pet = next((pet for pet in pets if pet["id"] == pet_id), None)
     form = EditPetForm()
     pet = Pet.query.get(pet_id)
     if pet is None:
@@ -83,11 +88,10 @@ def pet_details(pet_id):
         pet.bio = form.bio.data
         try:
             db.session.commit()
-        except Exception as xx:  # noqa
-            print(xx)
+        except Exception as ex:
+            print(ex)
             db.session.rollback()
-            return render_template("details.html", pet=pet, form=form,
-                                   message="A pet with this name already exists!")
+            return render_template("details.html", pet=pet, form=form, message="A Pet with this name already exists!")
     return render_template("details.html", pet=pet, form=form)
 
 
@@ -99,8 +103,8 @@ def delete_pet(pet_id):
     db.session.delete(pet)
     try:
         db.session.commit()
-    except Exception as xx:  # noqa
-        print(xx)
+    except Exception as ex:
+        print(ex)
         db.session.rollback()
     return redirect(url_for('homepage', _scheme='https', _external=True))
 
@@ -114,8 +118,8 @@ def signup():
         db.session.add(new_user)
         try:
             db.session.commit()
-        except Exception as xx:
-            print(xx)
+        except Exception as ex:
+            print(ex)
             db.session.rollback()
             return render_template("signup.html", form=form,
                                    message="This Email already exists in the system! Please Login instead.")
@@ -129,13 +133,10 @@ def signup():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        # user = next((user for user in users if user["email"] == form.email.data and user["password"] ==
-        # form.password.data), None)
         user = User.query.filter_by(email=form.email.data, password=form.password.data).first()
         if user is None:
             return render_template("login.html", form=form, message="Wrong Credentials. Please Try Again.")
         else:
-            # session['user'] = user
             session['user'] = user.id
             return render_template("login.html", message="Successfully Logged In!")
     return render_template("login.html", form=form)

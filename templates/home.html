@@ -3,28 +3,28 @@
 {% block title %} Home {% endblock %}
 
 {% block heading %}
-    <center>Paws Rescue Center 🐾</center>
+<div style="text-align: center;">Paws Rescue Center 🐾</div>
 {% endblock %}
 
 {% block content%}
-    <table>
-        <tr>
-            <th>Image</th>
-            <th>Name</th>
-            <th>Age</th>
-            <th>Bio</th>
-        </tr>
-        {% for pet in pets %}
-            <tr>
-                <td >
-                    <a href="{{url_for('pet_details', pet_id = pet['id'])}}">
-                        <img src= "{{url_for('static', filename = pet["id"]|string+".jpg")}}" height="100" >
-                    </a>
-                </td>
-                <td>{{ pet["name"] }}</td>
-                <td>{{ pet["age"] }}</td>
-                <td>{{ pet["bio"] }}</td>
-            </tr>
-        {% endfor %}
-    </table>
+  <table>
+    <tr>
+      <th>Image</th>
+      <th>Name</th>
+      <th>Age</th>
+      <th>Bio</th>
+    </tr>
+    {% for pet in pets %}
+    <tr>
+        <td >
+            <a href="{{url_for('pet_details', pet_id = pet.id)}}">
+                <img src= "{{url_for('static', filename = pet.id|string+".jpg")}}" height="100"  alt="pet-img">
+            </a>
+        </td>
+        <td>{{ pet.name }}</td>
+        <td>{{ pet.age }}</td>
+        <td>{{ pet.bio }}</td>
+    </tr>
+    {% endfor %}
+  </table>
 {% endblock %}
