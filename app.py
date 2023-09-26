@@ -34,23 +34,32 @@ class User(db.Model):
 with app.app_context():
     db.create_all()
 
-    # Create "team" user and add it to session
-    team = User(full_name="Pet Rescue Team", email="team@petrescue.co", password="adminPass")
-    db.session.add(team)
+    # Define a list of users to add
+    users_to_add = [
+        User(full_name="Pet Rescue Team", email="team@petrescue.co", password="adminPass")
+    ]
 
-    # Create all pets
-    nelly = Pet(name="Nelly", age="5 weeks",
-                bio="I am a tiny kitten rescued by the good people at Paws Rescue Center. I love squeaky toys and "
-                    "cuddles.")
-    yuki = Pet(name="Yuki", age="8 months", bio="I am a handsome gentle-cat. I like to dress up in bow ties.")
-    basker = Pet(name="Basker", age="1 year", bio="I love barking. But, I love my friends more.")
-    mrfurrkins = Pet(name="Mr. Furrkins", age="5 years", bio="Probably napping.")
+    # Define a list of pets to add
+    pets_to_add = [
+        Pet(name="Nelly", age="5 weeks",
+            bio="I am a tiny kitten rescued by the good people at Paws Rescue Center. "
+                "I love squeaky toys and cuddles."),
+        Pet(name="Yuki", age="8 months", bio="I am a handsome gentle-cat. I like to dress up in bow ties."),
+        Pet(name="Basker", age="1 year", bio="I love barking. But, I love my friends more."),
+        Pet(name="Mr. Furrkins", age="5 years", bio="Probably napping.")
+    ]
 
-    # Add all pets to the session
-    db.session.add(nelly)
-    db.session.add(yuki)
-    db.session.add(basker)
-    db.session.add(mrfurrkins)
+    # Add users to the session if they don't already exist
+    for user in users_to_add:
+        existing_user = User.query.filter_by(email=user.email).first()
+        if existing_user is None:
+            db.session.add(user)
+
+    # Add pets to the session if they don't already exist
+    for pet in pets_to_add:
+        existing_pet = Pet.query.filter_by(name=pet.name).first()
+        if existing_pet is None:
+            db.session.add(pet)
 
     # Commit changes in the session
     try:
@@ -79,34 +88,34 @@ def about():
 def pet_details(pet_id):
     """View function for Showing Details of Each Pet."""
     form = EditPetForm()
-    pet = Pet.query.get(pet_id)
-    if pet is None:
+    a_pet = Pet.query.get(pet_id)
+    if a_pet is None:
         abort(404, description="No Pet was Found with the given ID")
     if form.validate_on_submit():
-        pet.name = form.name.data
-        pet.age = form.age.data
-        pet.bio = form.bio.data
+        a_pet.name = form.name.data
+        a_pet.age = form.age.data
+        a_pet.bio = form.bio.data
         try:
             db.session.commit()
         except Exception as ex:
             print(ex)
             db.session.rollback()
-            return render_template("details.html", pet=pet, form=form, message="A Pet with this name already exists!")
-    return render_template("details.html", pet=pet, form=form)
+            return render_template("details.html", pet=a_pet, form=form, message="A Pet with this name already exists!")
+    return render_template("details.html", pet=a_pet, form=form)
 
 
 @app.route("/delete/<int:pet_id>")
 def delete_pet(pet_id):
-    pet = Pet.query.get(pet_id)
-    if pet is None:
+    a_pet = Pet.query.get(pet_id)
+    if a_pet is None:
         abort(404, description="No Pet was Found with the given ID")
-    db.session.delete(pet)
+    db.session.delete(a_pet)
     try:
         db.session.commit()
     except Exception as ex:
         print(ex)
         db.session.rollback()
-    return redirect(url_for('homepage', _scheme='https', _external=True))
+    return redirect(url_for('homepage', _scheme='http', _external=True))
 
 
 @app.route("/signup", methods=["POST", "GET"])
@@ -133,11 +142,11 @@ def signup():
 def login():
     form = LoginForm()
     if form.validate_on_submit():
-        user = User.query.filter_by(email=form.email.data, password=form.password.data).first()
-        if user is None:
+        a_user = User.query.filter_by(email=form.email.data, password=form.password.data).first()
+        if a_user is None:
             return render_template("login.html", form=form, message="Wrong Credentials. Please Try Again.")
         else:
-            session['user'] = user.id
+            session['user'] = a_user.id
             return render_template("login.html", message="Successfully Logged In!")
     return render_template("login.html", form=form)
 
@@ -146,7 +155,7 @@ def login():
 def logout():
     if 'user' in session:
         session.pop('user')
-    return redirect(url_for('homepage', _scheme='https', _external=True))
+    return redirect(url_for('homepage', _scheme='http', _external=True))
 
 
 if __name__ == "__main__":
